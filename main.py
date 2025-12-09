@@ -177,9 +177,12 @@ def remove_offer():
         return make_response(jsonify({"error": f"Error al eliminar la oferta: {str(e)}"}), 500)
 
 # Sirve los archivos estáticos para las rutas del frontend
-@app.route("/<path:path>")
-def serve_static(path):
-    return render_template(path)
+@app.route('/<path:path>')
+def serve_public_files(path):
+    if path.endswith('.html'):
+        return render_template(path)
+    else:
+        return send_from_directory('public', path)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
