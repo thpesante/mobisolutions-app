@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Producto Destacado - Yalopido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f6; display: flex; color: #333; }
+        .sidebar { width: 260px; background-color: #ffffff; height: 100vh; position: fixed; left: 0; top: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 1001; transition: transform 0.3s ease-in-out; }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-header { padding: 20px; background-color: #00897b; color: white; text-align: center; }
+        .sidebar-header .logo { font-weight: bold; font-size: 24px; margin-bottom: 10px; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 20px 0; flex-grow: 1; }
+        .sidebar-nav li { padding: 15px 25px; cursor: pointer; display: flex; align-items: center; font-size: 16px; color: #555; transition: background-color 0.2s, color 0.2s; }
+        .sidebar-nav li i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar-nav li:hover, .sidebar-nav li.active { background-color: #e0e0e0; }
+        .sidebar-footer { padding: 20px; text-align: center; }
+        #logout-btn { background: none; border: 1px solid #E5356F; color: #E5356F; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; }
+        
+        .main-content { margin-left: 260px; padding: 30px; width: calc(100% - 260px); transition: margin-left 0.3s ease-in-out; text-align: center; }
+        .main-header { display: none; align-items: center; justify-content: space-between; margin-bottom: 20px; text-align: left; }
+        .menu-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #333; }
+        .main-content p { color: #666; font-size: 18px; }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; }
+        .sidebar-overlay.open { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; width: 100%; padding: 15px; }
+            .main-header { display: flex; }
+            h1.desktop-only { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">Yalopido</div>
+            <div class="user-info"><p id="user-email"></p></div>
+        </div>
+        <ul class="sidebar-nav">
+            <li onclick="navigateTo('/pedidos.html')"><i class="fas fa-receipt"></i> Pedidos</li>
+            <li onclick="navigateTo('/ofertas.html')"><i class="fas fa-tags"></i> Ofertas</li>
+            <li onclick="navigateTo('/productos.html')"><i class="fas fa-box-open"></i> Productos</li>
+            <li class="active" onclick="navigateTo('/producto-destacado.html')"><i class="fas fa-star"></i> Producto destacado</li>
+            <li onclick="navigateTo('/reportes.html')"><i class="fas fa-chart-line"></i> Reportes</li>
+            <li onclick="navigateTo('/cuenta.html')"><i class="fas fa-user-shield"></i> Cuenta</li>
+        </ul>
+        <div class="sidebar-footer">
+            <button id="logout-btn">Cerrar Sesión</button>
+        </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+        <header class="main-header">
+            <button class="menu-btn" id="menu-btn"><i class="fas fa-bars"></i></button>
+            <h2>Producto Destacado</h2>
+        </header>
+        <h1 class="desktop-only">Gestión de Producto Destacado</h1>
+        <p>Esta sección estará disponible próximamente.</p>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script>
+        function navigateTo(path) {
+            window.location.href = path;
+        }
+
+        const firebaseConfig = { apiKey: "AIzaSyDHZzoPhzUPX-6BWaCx4J5xeXwSeOYmkMY", authDomain: "taxinet-929d8.firebaseapp.com", projectId: "taxinet-929d8", storageBucket: "taxinet-929d8.appspot.com", messagingSenderId: "52566606294", appId: "1:52566606294:web:6a2b4f1e7c964502c46477" };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        const userEmailSpan = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                userEmailSpan.textContent = user.email;
+            } else {
+                window.location.href = 'app.html';
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'app.html';
+            });
+        });
+
+        const menuBtn = document.getElementById('menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        });
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        });
+    </script>
+</body>
+</html>

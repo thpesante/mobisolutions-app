@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Producto - Yalopido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f6; padding-bottom: 70px; }
+        main { padding: 20px; max-width: 800px; margin: 0 auto; }
+        
+        .loading-container { text-align: center; padding: 50px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #00897b; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .product-detail-container { background-color: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .product-image-section { background-color: #fff; padding: 20px; display: flex; justify-content: center; align-items: center; }
+        .product-image { max-width: 100%; max-height: 300px; object-fit: contain; }
+        
+        .product-info-section { padding: 20px; }
+        .product-seller { color: #888; font-size: 14px; margin-bottom: 8px; }
+        .product-title { font-size: 24px; font-weight: bold; margin: 0 0 10px; }
+        .product-description { font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px; }
+        
+        .price-section { display: flex; align-items: baseline; gap: 15px; margin-bottom: 25px; }
+        .price-final { font-size: 28px; font-weight: bold; color: #E5356F; }
+        .price-original { font-size: 20px; color: #999; text-decoration: line-through; }
+
+        .actions-section button { width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; transition: background-color 0.2s; margin-bottom: 10px; }
+        #add-to-cart-btn { background-color: #00897b; color: white; }
+        #buy-now-btn { background-color: #E5356F; color: white; }
+
+        .similar-products-section { margin-top: 30px; }
+        .similar-products-section h2 { font-size: 18px; font-weight: bold; margin-bottom: 12px; }
+        .horizontal-scroll { display: flex; overflow-x: auto; gap: 16px; padding: 4px; }
+        .product-card { flex: 0 0 160px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; }
+        .product-card img { width: 100%; height: 100px; object-fit: contain; background: #fff; padding-top: 5px; }
+        .product-card .info { padding: 10px; }
+        .product-card .name { font-weight: 600; font-size: 14px; margin-bottom: 5px; }
+        .product-card .price { font-size: 14px; color: #00897b; }
+
+        .hidden { display: none; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background-color: #fff; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); z-index: 1000; padding: 8px 0; }
+        .bottom-nav a { flex: 1; text-align: center; color: #888; text-decoration: none; padding: 4px 0; }
+        .bottom-nav a.active { color: #00897b; }
+        .bottom-nav i { font-size: 22px; }
+        .bottom-nav p { font-size: 12px; margin: 4px 0 0; }
+    </style>
+</head>
+<body>
+
+    <main id="main-content">
+        <div id="loader" class="loading-container"><div class="spinner"></div><p>Cargando producto...</p></div>
+        <div id="product-content" class="hidden">
+            <div class="product-detail-container">
+                <div class="product-image-section">
+                    <img id="product-image" src="" alt="Imagen del producto">
+                </div>
+                <div class="product-info-section">
+                    <p id="product-seller" class="product-seller"></p>
+                    <h1 id="product-title" class="product-title"></h1>
+                    <p id="product-description" class="product-description"></p>
+                    <div id="price-section" class="price-section"></div>
+                    <div class="actions-section">
+                        <button id="add-to-cart-btn">Agregar al Carrito</button>
+                        <button id="buy-now-btn">Comprar Ahora</button>
+                    </div>
+                </div>
+            </div>
+            <section id="similar-products-section" class="similar-products-section hidden">
+                <h2>Productos Similares</h2>
+                <div id="similar-products-scroll" class="horizontal-scroll"></div>
+            </section>
+        </div>
+        <div id="error-state" class="hidden loading-container">
+            <p>Producto no encontrado.</p>
+            <a href="home.html">Volver al inicio</a>
+        </div>
+    </main>
+
+    <footer class="bottom-nav">
+        <a href="home.html"><i class="fas fa-home"></i><p>Inicio</p></a>
+        <a href="cart.html"><i class="fas fa-shopping-cart"></i><p>Carrito</p></a>
+        <a href="mi-cuenta"><i class="fas fa-user"></i><p>Cuenta</p></a>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDHZzoPhzUPX-6BWaCx4J5xeXwSeOYmkMY", authDomain: "taxinet-929d8.firebaseapp.com", projectId: "taxinet-929d8", storageBucket: "taxinet-929d8.appspot.com", messagingSenderId: "52566606294", appId: "1:52566606294:web:6a2b4f1e7c964502c46477" };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const loader = document.getElementById('loader');
+        const productContent = document.getElementById('product-content');
+        const errorState = document.getElementById('error-state');
+
+        let currentProduct = null;
+        let currentUser = null;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                loadProduct();
+            } else {
+                window.location.href = '/';
+            }
+        });
+
+        async function loadProduct() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId) {
+                showError();
+                return;
+            }
+
+            try {
+                const productRef = db.collection('products').doc(productId);
+                const doc = await productRef.get();
+
+                if (doc.exists) {
+                    currentProduct = { id: doc.id, ...doc.data() };
+                    displayProduct(currentProduct);
+                    showContent();
+                    loadSimilarProducts(currentProduct.category, currentProduct.id);
+                } else {
+                    showError();
+                }
+            } catch (error) {
+                console.error("Error al cargar producto:", error);
+                showError();
+            }
+        }
+
+        function displayProduct(product) {
+            document.getElementById('product-image').src = product.imageUrl || 'https://via.placeholder.com/300';
+            document.getElementById('product-seller').textContent = `Vendido por: ${product.createdBy || 'Vendedor Anónimo'}`;
+            document.getElementById('product-title').textContent = product.name;
+            document.getElementById('product-description').textContent = product.descripcion;
+            
+            const priceSection = document.getElementById('price-section');
+            if (product.isOffer && product.offerPrice) {
+                priceSection.innerHTML = `
+                    <span class="price-final">S/ ${product.offerPrice.toFixed(2)}</span>
+                    <span class="price-original">S/ ${product.price.toFixed(2)}</span>
+                `;
+            } else {
+                priceSection.innerHTML = `<span class="price-final">S/ ${product.price.toFixed(2)}</span>`;
+            }
+        }
+        
+        async function loadSimilarProducts(category, currentId) {
+            if (!category) return;
+            const section = document.getElementById('similar-products-section');
+            const container = document.getElementById('similar-products-scroll');
+            
+            try {
+                const snapshot = await db.collection("products")
+                    .where("category", "==", category)
+                    .limit(10)
+                    .get();
+
+                const similarProducts = snapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(p => p.id !== currentId);
+                
+                if (similarProducts.length > 0) {
+                    section.classList.remove('hidden');
+                    container.innerHTML = similarProducts.map(p => `
+                        <a href="ver-producto.html?id=${p.id}" class="product-card">
+                            <img src="${p.imageUrl || 'https://via.placeholder.com/150'}" alt="${p.name}">
+                            <div class="info">
+                                <p class="name">${p.name}</p>
+                                <p class="price">S/ ${p.price.toFixed(2)}</p>
+                            </div>
+                        </a>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error("Error cargando productos similares:", error);
+            }
+        }
+
+        // Action Buttons
+        document.getElementById('add-to-cart-btn').addEventListener('click', async () => {
+            if (!currentProduct || !currentUser) return;
+            
+            const cartRef = db.collection('carritos').doc(currentUser.uid);
+            await db.runTransaction(async (transaction) => {
+                const cartDoc = await transaction.get(cartRef);
+                if (!cartDoc.exists) {
+                    transaction.set(cartRef, { products: [{...currentProduct, quantity: 1}] });
+                } else {
+                    const products = cartDoc.data().products || [];
+                    const existingProductIndex = products.findIndex(p => p.id === currentProduct.id);
+                    if (existingProductIndex > -1) {
+                        products[existingProductIndex].quantity += 1;
+                    } else {
+                        products.push({...currentProduct, quantity: 1});
+                    }
+                    transaction.update(cartRef, { products: products });
+                }
+            });
+            alert('Producto agregado al carrito');
+        });
+
+        document.getElementById('buy-now-btn').addEventListener('click', async () => {
+             if (!currentProduct || !currentUser) return;
+             const cartRef = db.collection('carritos').doc(currentUser.uid);
+             await cartRef.set({ products: [{...currentProduct, quantity: 1}] });
+             window.location.href = 'cart.html';
+        });
+
+        function showContent() {
+            loader.classList.add('hidden');
+            productContent.classList.remove('hidden');
+        }
+
+        function showError() {
+            loader.classList.add('hidden');
+            errorState.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>

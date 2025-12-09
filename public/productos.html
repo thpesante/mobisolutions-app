@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos - Yalopido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f6; display: flex; color: #333; }
+        .sidebar { width: 260px; background-color: #ffffff; height: 100vh; position: fixed; left: 0; top: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 1002; transition: transform 0.3s ease-in-out; }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-header { padding: 20px; background-color: #00897b; color: white; text-align: center; }
+        .sidebar-header .logo { font-weight: bold; font-size: 24px; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 20px 0; flex-grow: 1; }
+        .sidebar-nav li { padding: 15px 25px; cursor: pointer; display: flex; align-items: center; font-size: 16px; color: #555; }
+        .sidebar-nav li:hover, .sidebar-nav li.active { background-color: #e0e0e0; }
+        .sidebar-footer { padding: 20px; }
+        #logout-btn { width: 100%; border: 1px solid #E5356F; color: #E5356F; background: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+
+        .main-content { margin-left: 260px; padding: 30px; width: calc(100% - 260px); transition: margin-left 0.3s ease-in-out; }
+        .main-header { display: none; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .menu-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+        h1.desktop-only { color: #00897b; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 20px; }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .search-bar { flex-grow: 1; min-width: 250px; }
+        .search-bar input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        #add-product-btn { background-color: #E5356F; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        .product-card img { width: 100%; height: 160px; object-fit: cover; }
+        .product-card-info { padding: 15px; }
+        .product-card-info h3 { margin: 0 0 5px; font-size: 16px; }
+        .product-card-info p { margin: 0; font-size: 14px; color: #666; }
+        .product-card .price { font-weight: bold; color: #00897b; margin-top: 5px; }
+        .product-card-actions { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.8); border-radius: 5px; display: none; }
+        .product-card:hover .product-card-actions { display: flex; }
+        .product-card-actions button { background: none; border: none; font-size: 16px; padding: 5px; cursor: pointer; color: #333; }
+        .product-card-actions button.delete-btn { color: #E5356F; }
+        
+        .modal { display: none; position: fixed; z-index: 1003; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 25px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .modal-content h2 { margin-top: 0; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        #save-product-btn { background-color: #00897b; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1001; }
+        .sidebar-overlay.open { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; width: 100%; padding: 15px; }
+            .main-header { display: flex; }
+            h1.desktop-only { display: none; }
+            #products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+            .product-card img { height: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><div class="logo">Yalopido</div><div class="user-info"><p id="user-email"></p></div></div>
+        <ul class="sidebar-nav">
+            <li onclick="navigateTo('/pedidos.html')"><i class="fas fa-receipt"></i> Pedidos</li>
+            <li onclick="navigateTo('/ofertas.html')"><i class="fas fa-tags"></i> Ofertas</li>
+            <li class="active" onclick="navigateTo('/productos.html')"><i class="fas fa-box-open"></i> Productos</li>
+            <li onclick="navigateTo('/producto-destacado.html')"><i class="fas fa-star"></i> Producto destacado</li>
+            <li onclick="navigateTo('/reportes.html')"><i class="fas fa-chart-line"></i> Reportes</li>
+            <li onclick="navigateTo('/cuenta.html')"><i class="fas fa-user-shield"></i> Cuenta</li>
+        </ul>
+        <div class="sidebar-footer"><button id="logout-btn">Cerrar Sesión</button></div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+        <header class="main-header"><button class="menu-btn" id="menu-btn"><i class="fas fa-bars"></i></button><h2>Mis Productos</h2></header>
+        <h1 class="desktop-only">Mis Productos</h1>
+        <div class="toolbar"><div class="search-bar"><input type="text" id="search-input" placeholder="Buscar producto por nombre..."></div><button id="add-product-btn"><i class="fas fa-plus"></i> Añadir Producto</button></div>
+        <div id="products-grid"><p>Cargando productos...</p></div>
+    </main>
+
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-title">Añadir Producto</h2>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <div class="form-group"><label for="product-name">Nombre del Producto</label><input type="text" id="product-name" required></div>
+                <div class="form-group"><label for="product-description">Descripción</label><textarea id="product-description" rows="3"></textarea></div>
+                <div class="form-group"><label for="product-category">Categoría</label><select id="product-category" required><option value="">Selecciona una categoría</option><option value="Alcohol">Alcohol</option><option value="Bebidas">Bebidas</option><option value="Comida Rápida">Comida Rápida</option><option value="Comida">Comida</option><option value="Farmacia">Farmacia</option><option value="Snacks">Snacks</option></select></div>
+                <div class="form-group"><label for="product-price">Precio de Venta</label><input type="number" id="product-price" step="0.01" required></div>
+                <div class="form-group"><label for="product-image-url">URL de la Imagen</label><input type="text" id="product-image-url"></div>
+                <button type="submit" id="save-product-btn">Guardar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script>
+        function navigateTo(path) { window.location.href = path; }
+        const firebaseConfig = { apiKey: "AIzaSyDHZzoPhzUPX-6BWaCx4J5xeXwSeOYmkMY", authDomain: "taxinet-929d8.firebaseapp.com", projectId: "taxinet-929d8", storageBucket: "taxinet-929d8.appspot.com", messagingSenderId: "52566606294", appId: "1:52566606294:web:6a2b4f1e7c964502c46477" };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        let allProducts = [];
+        let currentUser = null;
+        const userEmailSpan = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+        const productsGrid = document.getElementById('products-grid');
+        const searchInput = document.getElementById('search-input');
+        const modal = document.getElementById('product-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const closeBtn = document.querySelector('.close-btn');
+        const addProductBtn = document.getElementById('add-product-btn');
+        const productForm = document.getElementById('product-form');
+        const productIdInput = document.getElementById('product-id');
+        const productNameInput = document.getElementById('product-name');
+        const productDescriptionInput = document.getElementById('product-description');
+        const productCategoryInput = document.getElementById('product-category');
+        const productPriceInput = document.getElementById('product-price');
+        const productImageUrlInput = document.getElementById('product-image-url');
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                userEmailSpan.textContent = user.email;
+                fetchAndDisplayProducts();
+            } else { window.location.href = 'app.html'; }
+        });
+
+        async function fetchAndDisplayProducts() {
+            if (!currentUser) return;
+            try {
+                const idToken = await currentUser.getIdToken(true);
+                const response = await fetch('/api/get_my_products', { headers: { 'Authorization': 'Bearer ' + idToken } });
+                if (!response.ok) throw new Error(`Error: ${response.status}`);
+                allProducts = await response.json();
+                displayProducts(allProducts);
+            } catch (error) { productsGrid.innerHTML = `<p>Error al cargar productos: ${error.message}</p>`; }
+        }
+
+        function displayProducts(productsToDisplay) {
+            productsGrid.innerHTML = '';
+            if (productsToDisplay.length === 0) {
+                productsGrid.innerHTML = '<p>No tienes productos. ¡Añade uno!</p>';
+                return;
+            }
+            productsToDisplay.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `<img src="${product.imageUrl || 'https://via.placeholder.com/220'}" alt="${product.name}"><div class="product-card-info"><h3>${product.name}</h3><p>${product.descripcion || ''}</p><p class="price">S/ ${parseFloat(product.price || 0).toFixed(2)}</p></div><div class="product-card-actions"><button class="edit-btn" data-id="${product.id}" title="Editar"><i class="fas fa-edit"></i></button><button class="delete-btn" data-id="${product.id}" title="Eliminar"><i class="fas fa-trash-alt"></i></button></div>`;
+                productsGrid.appendChild(card);
+            });
+            document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(allProducts.find(p => p.id === e.currentTarget.dataset.id)); }));
+            document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); handleDeleteProduct(e.currentTarget.dataset.id); }));
+        }
+
+        function openAddModal() { productForm.reset(); productIdInput.value = ''; modalTitle.textContent = 'Añadir Nuevo Producto'; modal.style.display = 'flex'; }
+        function openEditModal(product) { 
+            if (!product) return;
+             productForm.reset(); 
+             productIdInput.value = product.id; 
+             productNameInput.value = product.name || ''; 
+             productDescriptionInput.value = product.descripcion || ''; 
+             productCategoryInput.value = product.category || ''; 
+             productPriceInput.value = product.price || ''; 
+             productImageUrlInput.value = product.imageUrl || ''; 
+             modalTitle.textContent = 'Editar Producto'; 
+             modal.style.display = 'flex'; 
+        }
+        function closeModal() { modal.style.display = 'none'; }
+
+        async function handleDeleteProduct(id) {
+            if (!confirm('¿Seguro que quieres eliminar este producto?')) return;
+            try {
+                const idToken = await currentUser.getIdToken(true);
+                const response = await fetch('/api/delete_product', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken }, body: JSON.stringify({ id }) });
+                const result = await response.json();
+                if (result.success) fetchAndDisplayProducts();
+                else alert(`Error: ${result.message}`);
+            } catch (error) { alert('Error de red.'); }
+        }
+
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const idToken = await currentUser.getIdToken(true);
+            const productData = { id: productIdInput.value, name: productNameInput.value, descripcion: productDescriptionInput.value, category: productCategoryInput.value, price: parseFloat(productPriceInput.value), imageUrl: productImageUrlInput.value };
+            try {
+                const response = await fetch('/api/save_product', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken }, body: JSON.stringify(productData) });
+                const result = await response.json();
+                if (result.success) { closeModal(); fetchAndDisplayProducts(); } 
+                else { alert(`Error al guardar: ${result.message}`); }
+            } catch (error) { alert('Error de red.'); }
+        });
+
+        logoutBtn.addEventListener('click', () => auth.signOut().then(() => { window.location.href = 'app.html'; }));
+        addProductBtn.addEventListener('click', openAddModal);
+        closeBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => { if (e.target == modal) closeModal(); });
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            displayProducts(allProducts.filter(p => (p.name || '').toLowerCase().includes(searchTerm)));
+        });
+
+        const menuBtn = document.getElementById('menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        menuBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
+</body>
+</html>

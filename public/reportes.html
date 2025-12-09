@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Ventas - Yalopido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f6; display: flex; color: #333; }
+        .sidebar { width: 260px; background-color: #ffffff; height: 100vh; position: fixed; left: 0; top: 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 1001; transition: transform 0.3s ease-in-out; }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-header { padding: 20px; background-color: #00897b; color: white; text-align: center; }
+        .sidebar-header .logo { font-weight: bold; font-size: 24px; }
+        .sidebar-nav { list-style: none; padding: 0; margin: 20px 0; flex-grow: 1; }
+        .sidebar-nav li { padding: 15px 25px; cursor: pointer; display: flex; align-items: center; font-size: 16px; color: #555; transition: background-color 0.2s, color 0.2s; }
+        .sidebar-nav li i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar-nav li:hover, .sidebar-nav li.active { background-color: #e0e0e0; }
+        .sidebar-footer { padding: 20px; text-align: center; }
+        #logout-btn { background: none; border: 1px solid #E5356F; color: #E5356F; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; }
+        
+        .main-content { margin-left: 260px; padding: 30px; width: calc(100% - 260px); transition: margin-left 0.3s ease-in-out; }
+        .main-header { display: none; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .menu-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #333; }
+        .container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .container h1, .container h2 { margin-top: 0; color: #00897b; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+
+        .report-controls { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 30px; }
+        #generate-report-btn { background-color: #E5356F; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .report-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; text-align: center; }
+        .summary-card p { font-size: 28px; font-weight: bold; color: #00897b; margin: 0; }
+        #report-results-table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; }
+        .sidebar-overlay.open { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; width: 100%; padding: 15px; }
+            .main-header { display: flex; }
+            h1.desktop-only { display: none; }
+            .report-controls { flex-direction: column; align-items: stretch; }
+            .report-summary { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><div class="logo">Yalopido</div><div class="user-info"><p id="user-email"></p></div></div>
+        <ul class="sidebar-nav">
+            <li class="active" onclick="navigateTo('/pedidos')"><i class="fas fa-receipt"></i> Pedidos</li>
+            <li onclick="navigateTo('/ofertas.html')"><i class="fas fa-tags"></i> Ofertas</li>
+            <li onclick="navigateTo('/productos.html')"><i class="fas fa-box-open"></i> Productos</li>
+            <li onclick="navigateTo('/producto-destacado.html')"><i class="fas fa-star"></i> Producto destacado</li>
+            <li onclick="navigateTo('/reportes.html')"><i class="fas fa-chart-line"></i> Reportes</li>
+            <li onclick="navigateTo('/cuenta.html')"><i class="fas fa-user-shield"></i> Cuenta</li>
+        </ul>
+        <div class="sidebar-footer"><button id="logout-btn">Cerrar Sesión</button></div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main-content">
+        <header class="main-header"><button class="menu-btn" id="menu-btn"><i class="fas fa-bars"></i></button><h2>Reporte de Ventas</h2></header>
+        <h1 class="desktop-only">Reporte de Ventas</h1>
+        <div class="container">
+            <div class="report-controls">
+                <div class="control-group"><label for="start-date">Fecha de Inicio</label><input type="date" id="start-date"></div>
+                <div class="control-group"><label for="end-date">Fecha de Fin</label><input type="date" id="end-date"></div>
+                <div class="control-group"><label for="product-filter">Producto</label><select id="product-filter"><option value="">Todos</option></select></div>
+                <button id="generate-report-btn">Generar Reporte</button>
+            </div>
+        </div>
+        <div class="container" id="report-results-container"><p>Selecciona un rango de fechas para generar un reporte.</p></div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script>
+        function navigateTo(path) { window.location.href = path; }
+        const firebaseConfig = { apiKey: "AIzaSyDHZzoPhzUPX-6BWaCx4J5xeXwSeOYmkMY", authDomain: "taxinet-929d8.firebaseapp.com", projectId: "taxinet-929d8", storageBucket: "taxinet-929d8.appspot.com", messagingSenderId: "52566606294", appId: "1:52566606294:web:6a2b4f1e7c964502c46477" };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        let currentUser = null;
+        const userEmailSpan = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+        const generateBtn = document.getElementById('generate-report-btn');
+        const resultsContainer = document.getElementById('report-results-container');
+        const productFilterSelect = document.getElementById('product-filter');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                userEmailSpan.textContent = user.email;
+                setDefaultDates();
+                await loadProductOptions();
+            } else { window.location.href = '/'; }
+        });
+
+        function setDefaultDates() {
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDateInput.value = today.toISOString().split('T')[0];
+            startDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
+        }
+
+        async function getAuthToken() {
+            if (!currentUser) throw new Error("Usuario no autenticado.");
+            return await currentUser.getIdToken(true);
+        }
+
+        async function apiFetch(endpoint, options = {}) {
+            const token = await getAuthToken();
+            const response = await fetch(endpoint, { ...options, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, ...options.headers } });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error: ${response.status}`);
+            }
+            return response.json();
+        }
+
+        async function loadProductOptions() {
+            try {
+                const products = await apiFetch('/api/get_my_products');
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.name;
+                    productFilterSelect.appendChild(option);
+                });
+            } catch (error) { console.error('Error cargando productos:', error); }
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+            const productId = productFilterSelect.value;
+            if (!startDate || !endDate) return alert('Por favor, selecciona fechas.');
+            if (new Date(startDate) > new Date(endDate)) return alert('La fecha de inicio no puede ser posterior a la de fin.');
+            resultsContainer.innerHTML = '<p>Generando reporte...</p>';
+            try {
+                const reportData = await apiFetch('/api/generate_report', { method: 'POST', body: JSON.stringify({ startDate, endDate, productId: productId || null }) });
+                displayReport(reportData);
+            } catch (error) { resultsContainer.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`; }
+        });
+
+        function displayReport(data) {
+            if (!data || !data.summary) {
+                resultsContainer.innerHTML = '<p>Error al procesar el reporte.</p>';
+                return;
+            }
+            const summaryHTML = `<div class="report-summary"><div class="summary-card"><h3>Ingresos Totales</h3><p>S/ ${data.summary.total_revenue.toFixed(2)}</p></div><div class="summary-card"><h3>Artículos Vendidos</h3><p>${data.summary.total_items_sold}</p></div></div>`;
+            let breakdownHTML = '<h2>Desglose por Producto</h2>';
+            if (data.breakdown.length === 0) {
+                breakdownHTML += '<p>No se encontraron ventas para los criterios seleccionados.</p>';
+            } else {
+                breakdownHTML += `<table id="report-results-table"><thead><tr><th>Producto</th><th>Vendidos</th><th>Ingresos</th></tr></thead><tbody>${data.breakdown.map(item => `<tr><td>${item.name}</td><td>${item.items_sold}</td><td>S/ ${item.revenue.toFixed(2)}</td></tr>`).join('')}</tbody></table>`;
+            }
+            resultsContainer.innerHTML = summaryHTML + breakdownHTML;
+        }
+
+        logoutBtn.addEventListener('click', () => auth.signOut());
+
+        const menuBtn = document.getElementById('menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        menuBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
+</body>
+</html>

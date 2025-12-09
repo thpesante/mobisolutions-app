@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - Yalopido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f6; padding-bottom: 70px; }
+        main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+        .cart-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        
+        .cart-items { background-color: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .cart-item { display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item img { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
+        .item-info { flex-grow: 1; }
+        .item-info h3 { margin: 0; font-size: 16px; }
+        .item-info p { margin: 5px 0 0; color: #888; }
+        .quantity-controls { display: flex; align-items: center; gap: 10px; }
+        .quantity-controls button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ccc; background-color: #f9f9f9; cursor: pointer; font-size: 16px; }
+        .item-price { font-weight: bold; font-size: 16px; }
+        .remove-item { background: none; border: none; color: #E5356F; cursor: pointer; font-size: 18px; }
+
+        .order-summary { background-color: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: sticky; top: 20px; }
+        .order-summary h2 { margin-top: 0; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 16px; }
+        .summary-total { font-weight: bold; font-size: 20px; border-top: 1px solid #eee; padding-top: 15px; margin-bottom: 20px; }
+        .checkout-btn { width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; background-color: #00897b; color: white; }
+        .checkout-btn:disabled { background-color: #aaa; }
+        
+        .delivery-options { margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+        .delivery-options .form-check { margin-bottom: 10px; }
+        .form-check-input:disabled + .form-check-label { color: #ccc; }
+
+        .empty-cart-container { text-align: center; padding: 50px; background-color: #fff; border-radius: 12px; margin-bottom: 30px;}
+        .empty-cart-container i { font-size: 50px; color: #ccc; margin-bottom: 20px; }
+        .empty-cart-container h2 { margin: 0; }
+        .empty-cart-container a { display: inline-block; margin-top: 20px; padding: 12px 25px; background-color: #00897b; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold; }
+
+        .products-section { margin-top: 30px; }
+        .products-section h2 { font-size: 18px; font-weight: bold; margin-bottom: 12px; }
+        .horizontal-scroll { display: flex; overflow-x: auto; gap: 16px; padding: 10px 4px; }
+        .product-card { flex: 0 0 160px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; text-decoration: none; color: inherit; display: block; }
+        .product-card img { width: 100%; height: 100px; object-fit: contain; background: #fff; padding-top: 5px; }
+        .product-card .info { padding: 10px; }
+        .product-card .name { font-weight: 600; font-size: 14px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-card .price { font-size: 14px; color: #00897b; }
+
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #00897b; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 50px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background-color: #fff; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); z-index: 1000; padding: 8px 0; }
+        .bottom-nav a { flex: 1; text-align: center; color: #888; text-decoration: none; padding: 4px 0; }
+        .bottom-nav a.active { color: #00897b; }
+        .bottom-nav i { font-size: 22px; }
+        .bottom-nav p { font-size: 12px; margin: 4px 0 0; }
+
+        /* Modal Styles */
+        .modal { position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); display: none; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 10px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        #map { height: 300px; width: 100%; margin-bottom: 15px; background-color: #e0e0e0; }
+        .modal-content input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        #order-summary-text { white-space: pre-wrap; font-family: monospace; max-height: 200px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 15px;}
+        #qrcode { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+
+    </style>
+</head>
+<body>
+    <main id="main-content"></main>
+    <footer class="bottom-nav"></footer>
+
+    <!-- Modals -->
+    <div id="map-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Selecciona tu ubicación</h2><span class="close-btn">&times;</span></div><div id="map"></div><input type="text" id="address-reference" placeholder="Añade una referencia (ej: casa con rejas negras)"><button id="confirm-location-btn" class="checkout-btn">Confirmar Ubicación</button></div></div>
+    <div id="order-summary-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Resumen del Pedido</h2><span class="close-btn">&times;</span></div><div id="order-summary-text"></div><div id="qrcode"></div><button id="confirm-order-btn" class="checkout-btn">Confirmar Pedido</button></div></div>
+
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzxl8zxRGhew5zIP4Lz7o_opWbFtw3T0Y&libraries=places"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDHZzoPhzUPX-6BWaCx4J5xeXwSeOYmkMY", authDomain: "taxinet-929d8.firebaseapp.com", projectId: "taxinet-929d8", storageBucket: "taxinet-929d8.appspot.com", messagingSenderId: "52566606294", appId: "1:52566606294:web:6a2b4f1e7c964502c46477" };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null, userCart = [], ubicacionSeleccionada = null, map, marker;
+
+        auth.onAuthStateChanged(user => user ? (currentUser = user, setupUI(), loadCart()) : window.location.href = '/');
+
+        function setupUI(){
+            document.getElementById('main-content').innerHTML = `
+                <div id="loader"><div class="spinner"></div></div>
+                <div id="cart-view" class="hidden">
+                    <div class="cart-container"><div class="cart-items"><h2 id="cart-title">Tu Carrito</h2><div id="cart-items-list"></div></div><div class="order-summary"><h2>Resumen de Pedido</h2><div id="summary-subtotal" class="summary-row"></div><div id="summary-total" class="summary-row summary-total"></div><div class="delivery-options"><h4>Opciones de Entrega</h4><div class="form-check"><input class="form-check-input" type="checkbox" id="check_retirar_tienda"><label class="form-check-label" for="check_retirar_tienda">Retirar en tienda</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="check_enviar_domicilio"><label class="form-check-label" for="check_enviar_domicilio">Enviar a domicilio</label></div></div><button id="checkout-btn" class="checkout-btn">Proceder al Pago</button></div></div></div>
+                <div id="empty-cart-view" class="empty-cart-container hidden"><i class="fas fa-shopping-cart"></i><h2>Tu carrito está vacío</h2><p>Parece que aún no has agregado productos. ¡Empieza a explorar!</p><a href="home.html">Seguir Comprando</a></div>
+                <section id="recommendations-section" class="products-section hidden"><h2>Productos Recomendados</h2><div id="recommendations-container" class="horizontal-scroll"></div></section>
+                <section id="offers-section" class="products-section hidden"><h2>Ofertas</h2><div id="offers-container" class="horizontal-scroll"></div></section>
+            `;
+            document.querySelector('.bottom-nav').innerHTML = `<a href="home.html"><i class="fas fa-home"></i><p>Inicio</p></a><a href="cart.html" class="active"><i class="fas fa-shopping-cart"></i><p>Carrito</p></a><a href="
+            
+            mi-cuenta.html"><i class="fas fa-user"></i><p>Cuenta</p></a>`;
+
+            const checkRetirar = document.getElementById('check_retirar_tienda'), checkEnviar = document.getElementById('check_enviar_domicilio');
+            checkRetirar.addEventListener('change', (e) => { e.target.checked ? (checkEnviar.checked = false, checkEnviar.disabled = true) : checkEnviar.disabled = false; });
+            checkEnviar.addEventListener('change', (e) => { e.target.checked ? (checkRetirar.checked = false, checkRetirar.disabled = true, mostrarMapaEnDialogo()) : (checkRetirar.disabled = false, ubicacionSeleccionada = null); });
+            
+            document.getElementById('checkout-btn').addEventListener('click', mostrarResumenPedido);
+            setupModal('map-modal', 'confirm-location-btn', () => {
+                if(ubicacionSeleccionada) { document.getElementById('map-modal').style.display = 'none'; } 
+                else { alert('Por favor, selecciona una ubicación en el mapa.'); }
+            });
+            setupModal('order-summary-modal', 'confirm-order-btn', generarPedido);
+        }
+
+        function setupModal(modalId, confirmBtnId, onConfirm) {
+            const modal = document.getElementById(modalId);
+            modal.querySelector('.close-btn').onclick = () => modal.style.display = "none";
+            document.getElementById(confirmBtnId).onclick = onConfirm;
+            window.addEventListener('click', (event) => { if (event.target == modal) modal.style.display = "none"; });
+        }
+
+        function mostrarMapaEnDialogo() { /* ... existing code ... */ }
+        function initMap(location) { /* ... existing code ... */ }
+        function mostrarResumenPedido(){ /* ... existing code ... */ }
+        async function generarPedido(){ /* ... existing code ... */ }
+
+        function loadCart() {
+            const cartRef = db.collection('carritos').doc(currentUser.uid);
+            cartRef.onSnapshot(doc => {
+                document.getElementById('loader').classList.add('hidden');
+                const cartView = document.getElementById('cart-view'), emptyCartView = document.getElementById('empty-cart-view');
+                if (doc.exists && doc.data().products && doc.data().products.length > 0) {
+                    userCart = doc.data().products;
+                    renderCart(userCart);
+                    cartView.classList.remove('hidden');
+                    emptyCartView.classList.add('hidden');
+                    document.getElementById('recommendations-section').classList.add('hidden');
+                    document.getElementById('offers-section').classList.add('hidden');
+                } else {
+                    userCart = [];
+                    cartView.classList.add('hidden');
+                    emptyCartView.classList.remove('hidden');
+                    fetchRecommendedProducts();
+                    fetchOffers();
+                }
+            });
+        }
+
+        function renderCart(products) {
+            document.getElementById('cart-items-list').innerHTML = products.map(p => `
+                <div class="cart-item" data-id="${p.id}">
+                    <img src="${p.imageUrl}" alt="${p.name}"><div class="item-info"><h3>${p.name}</h3><p>S/ ${p.offerPrice ? p.offerPrice.toFixed(2) : p.price.toFixed(2)}</p></div>
+                    <div class="quantity-controls"><button onclick="decrementQuantity('${p.id}')">-</button><span>${p.quantity}</span><button onclick="incrementQuantity('${p.id}')">+</button></div>
+                    <p class="item-price">S/ ${((p.offerPrice || p.price) * p.quantity).toFixed(2)}</p>
+                    <button class="remove-item" onclick="removeItem('${p.id}')"><i class="fas fa-trash-alt"></i></button></div>`).join('');
+            updateSummary(products);
+        }
+
+        function updateSummary(products) {
+            const subtotal = products.reduce((acc, p) => acc + (p.offerPrice || p.price) * p.quantity, 0);
+            document.getElementById('summary-subtotal').innerHTML = `<span>Subtotal</span><span>S/ ${subtotal.toFixed(2)}</span>`;
+            document.getElementById('summary-total').innerHTML = `<span>Total</span><span>S/ ${subtotal.toFixed(2)}</span>`;
+        }
+
+        async function fetchOffers() {
+            const offersContainer = document.getElementById('offers-container');
+            const offersSection = document.getElementById('offers-section');
+            try {
+                const snapshot = await db.collection("products").where("isOffer", "==", true).limit(10).get();
+                if (snapshot.empty) {
+                    offersSection.classList.add('hidden');
+                    return;
+                }
+                const offers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                offersContainer.innerHTML = offers.map(renderProductCard).join('');
+                offersSection.classList.remove('hidden');
+            } catch (error) {
+                console.error("Error fetching offers:", error);
+            }
+        }
+
+        async function fetchRecommendedProducts() {
+            const recContainer = document.getElementById('recommendations-container');
+            const recSection = document.getElementById('recommendations-section');
+            try {
+                const ordersSnapshot = await db.collection("pedidos").where("compradorUID", "==", currentUser.uid).get();
+                if (ordersSnapshot.empty) {
+                    recSection.classList.add('hidden');
+                    return;
+                }
+                let categoryCounts = {};
+                for (const orderDoc of ordersSnapshot.docs) {
+                    const productsSnapshot = await orderDoc.ref.collection('productos').get();
+                    productsSnapshot.forEach(productDoc => {
+                        const category = productDoc.data().category;
+                        if(category) categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+                    });
+                }
+                const topCategories = Object.keys(categoryCounts).sort((a, b) => categoryCounts[b] - categoryCounts[a]).slice(0, 3);
+
+                if (topCategories.length === 0) {
+                    recSection.classList.add('hidden');
+                    return;
+                }
+
+                const productsSnapshot = await db.collection('products').where('category', 'in', topCategories).limit(10).get();
+                const recommended = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                if(recommended.length > 0){
+                    recContainer.innerHTML = recommended.map(renderProductCard).join('');
+                    recSection.classList.remove('hidden');
+                } else {
+                    recSection.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error("Error fetching recommendations:", error);
+            }
+        }
+
+        function renderProductCard(product) {
+            const price = product.isOffer ? product.offerPrice : product.price;
+            return `
+                <a href="ver-producto.html?id=${product.id}" class="product-card">
+                    <img src="${product.imageUrl || 'https://via.placeholder.com/150'}" alt="${product.name}">
+                    <div class="info">
+                        <p class="name">${product.name}</p>
+                        <p class="price">S/ ${price.toFixed(2)}</p>
+                    </div>
+                </a>
+            `;
+        }
+
+        function incrementQuantity(productId) { db.runTransaction(async t => { const ref = db.collection('carritos').doc(currentUser.uid); const doc = await t.get(ref); const p = doc.data().products; const i = p.findIndex(item => item.id === productId); p[i].quantity++; t.update(ref, {products: p}); }); }
+        function decrementQuantity(productId) { db.runTransaction(async t => { const ref = db.collection('carritos').doc(currentUser.uid); const doc = await t.get(ref); let p = doc.data().products; const i = p.findIndex(item => item.id === productId); if (p[i].quantity > 1) { p[i].quantity--; } else { p = p.filter(item => item.id !== productId); } t.update(ref, {products: p}); }); }
+        function removeItem(productId) { db.runTransaction(async t => { const ref = db.collection('carritos').doc(currentUser.uid); const doc = await t.get(ref); const p = doc.data().products.filter(item => item.id !== productId); t.update(ref, {products: p}); }); }
+
+        // --- Full versions of previously shortened functions for clarity ---
+        function mostrarMapaEnDialogo() {
+            document.getElementById('map-modal').style.display = "block";
+            if (typeof google === 'object' && typeof google.maps === 'object') {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    initMap(userLocation);
+                }, () => initMap({ lat: -12.046374, lng: -77.042793 }));
+            } else {
+                 document.getElementById('map').innerHTML = "<p>No se pudo cargar Google Maps. Verifica la clave de API.</p>"
+            }
+        }
+
+        function initMap(location) {
+            map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: location });
+            marker = new google.maps.Marker({ position: location, map, draggable: true });
+            ubicacionSeleccionada = location;
+            map.addListener('click', (e) => { marker.setPosition(e.latLng); ubicacionSeleccionada = e.latLng.toJSON(); });
+            marker.addListener('dragend', (e) => { ubicacionSeleccionada = e.latLng.toJSON(); });
+        }
+
+        function mostrarResumenPedido(){
+            const checkRetirar = document.getElementById('check_retirar_tienda').checked;
+            const checkEnviar = document.getElementById('check_enviar_domicilio').checked;
+
+            if(!checkRetirar && !checkEnviar) return alert('Por favor, seleccione una opción de entrega.');
+            if(checkEnviar && !ubicacionSeleccionada) return alert('Por favor, confirme una ubicación para el envío a domicilio.');
+
+            let total = 0;
+            let resumenText = "Cant  Producto              P.U.    P.T.\n";
+            resumenText += "------------------------------------------\n";
+            userCart.forEach(p => {
+                const price = p.offerPrice || p.price;
+                const itemTotal = p.quantity * price;
+                total += itemTotal;
+                resumenText += `${p.quantity.toString().padEnd(5)} ${p.name.padEnd(20)} ${price.toFixed(2).padEnd(8)} ${itemTotal.toFixed(2)}\n`;
+            });
+            resumenText += "------------------------------------------\n";
+            resumenText += `Total: S/ ${total.toFixed(2)}`;
+
+            document.getElementById('order-summary-text').textContent = resumenText;
+            const qrcodeContainer = document.getElementById('qrcode');
+            qrcodeContainer.innerHTML = "";
+            new QRCode(qrcodeContainer, { text: resumenText, width: 200, height: 200 });
+
+            document.getElementById('order-summary-modal').style.display = 'block';
+        }
+
+        async function generarPedido(){
+            const btn = document.getElementById('confirm-order-btn');
+            btn.disabled = true; btn.textContent = 'Generando...';
+
+            const checkRetirar = document.getElementById('check_retirar_tienda').checked;
+            const deliveryMethod = checkRetirar ? 'Retirar en tienda' : 'Enviar a domicilio';
+            const total = userCart.reduce((acc, p) => acc + (p.offerPrice || p.price) * p.quantity, 0);
+
+            const pedidoData = {
+                compradorUID: currentUser.uid,
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                deliveryMethod,
+                total,
+                status: 'Pendiente'
+            };
+
+            if (deliveryMethod === 'Enviar a domicilio') {
+                pedidoData.clienteUbi = new firebase.firestore.GeoPoint(ubicacionSeleccionada.lat, ubicacionSeleccionada.lng);
+                pedidoData.addressReference = document.getElementById('address-reference').value;
+            }
+            
+            try {
+                const nuevoPedidoRef = await db.collection('pedidos').add(pedidoData);
+                const batch = db.batch();
+                userCart.forEach(product => {
+                    const productRef = nuevoPedidoRef.collection('productos').doc();
+                    batch.set(productRef, product);
+                });
+                await batch.commit();
+                await db.collection('carritos').doc(currentUser.uid).delete();
+                alert('¡Pedido generado con éxito!');
+                window.location.href = 'home.html';
+            } catch (error) {
+                console.error("Error al generar pedido: ", error);
+                alert('Hubo un error al generar el pedido.');
+            } finally {
+                btn.disabled = false; btn.textContent = 'Confirmar Pedido';
+            }
+        }
+
+    </script>
+</body>
+</html>
