@@ -1,0 +1,386 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobiSolutions - Diseño Web Adaptativo</title>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background-color: #2a0a4a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2em;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2em 0;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 1.5em;
+            font-size: 1.1em;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: #c86eff;
+        }
+        
+        .lang-switcher button {
+            background: none;
+            border: 1px solid #c86eff;
+            color: #c86eff;
+            padding: 0.5em 1em;
+            margin-left: 0.5em;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .lang-switcher button.active, .lang-switcher button:hover {
+            background-color: #c86eff;
+            color: #2a0a4a;
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4em 0;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .hero-text {
+            max-width: 50%;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .hero-text p {
+            font-size: 1.2em;
+            margin-bottom: 2em;
+        }
+
+        .hero-buttons .btn {
+            padding: 0.8em 2em;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn.primary {
+            background-color: #c86eff;
+            color: #2a0a4a;
+        }
+        .btn.primary:hover {
+            background-color: #fff;
+        }
+
+        .btn.secondary {
+            border: 2px solid #c86eff;
+            color: #c86eff;
+            margin-left: 1em;
+        }
+        .btn.secondary:hover {
+            background-color: #c86eff;
+            color: #2a0a4a;
+        }
+
+        .hero-image {
+            max-width: 45%;
+            animation: float 4s ease-in-out infinite;
+        }
+        .hero-image img {
+            width: 100%;
+            height: auto;
+        }
+        
+        section {
+            padding: 4em 0;
+            animation: fadeIn 1s ease-out;
+            border-top: 1px solid #4a1a7a;
+        }
+        
+        h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 1.5em;
+            color: #c86eff;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2em;
+        }
+
+        .service-card, .info-card {
+            background: #3a1a5a;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+             transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .service-card:hover, .info-card:hover {
+           transform: translateY(-10px);
+           box-shadow: 0 8px 16px rgba(199, 110, 255, 0.3);
+        }
+        
+        .service-card img {
+            max-width: 100px;
+            display: block;
+            margin: 0 auto 1em;
+            border-radius: 10px;
+        }
+        
+        #contactenos {
+            background: #3a1a5a;
+            padding: 2em;
+            border-radius: 10px;
+        }
+        
+        .contact-form label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 1em;
+            margin-bottom: 1em;
+            border-radius: 5px;
+            border: none;
+            background-color: #4a2a6a;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        
+        .contact-form button {
+            width: 100%;
+            padding: 1em;
+            background-color: #c86eff;
+            color: #2a0a4a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .contact-form button:hover {
+            background-color: #fff;
+        }
+        
+        .whatsapp-link {
+            display: inline-block;
+            margin-top: 1em;
+            margin-bottom: 2em;
+            padding: 0.8em 1.5em;
+            background-color: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .whatsapp-link:hover {
+            background-color: #128C7E;
+            transform: scale(1.05);
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            nav {
+                margin-top: 1em;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            nav a {
+                margin: 0.5em 0;
+            }
+            .hero {
+                flex-direction: column;
+                text-align: center;
+            }
+            .hero-text, .hero-image {
+                max-width: 100%;
+            }
+            .hero-image {
+                margin-top: 2em;
+            }
+            .service-grid {
+                grid-template-columns: 1fr;
+            }
+            .lang-switcher {
+                margin-top: 1em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">MobiSolutions</div>
+            <nav>
+                <a href="#hero-section" class="active">Home</a>
+                <a href="#vision">Visión</a>
+                <a href="#servicios">Servicios</a>
+                <a href="#contactenos">Contacto</a>
+            </nav>
+            <div class="lang-switcher">
+                <button onclick="setLanguage('es')" class="active">ES</button>
+                <button onclick="setLanguage('en')">EN</button>
+            </div>
+        </header>
+
+        <section class="hero" id="hero-section">
+            <div class="hero-text">
+                <h1 data-lang-es="Diseño Web y aplicativos moviles Adaptativos" data-lang-en="Adaptive Web Design and mobile applications">Diseño Web y aplicativos moviles Adaptativos"</h1>
+                <p data-lang-es="En MobiSolutions, transformamos ideas en experiencias digitales. Creamos soluciones móviles innovadoras que conectan tus necesidades con el futuro de la tecnología." data-lang-en="At MobiSolutions, we transform ideas into digital experiences. We create innovative mobile solutions that connect your needs with the future of technology.">
+                    En MobiSolutions, transformamos ideas en experiencias digitales. Creamos soluciones móviles innovadoras que conectan tus necesidades con el futuro de la tecnología.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#servicios" class="btn primary" data-lang-es="Empezar" data-lang-en="Get Started">Empezar</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="images/Web_design.png" alt="Ilustración de Diseño Web Adaptativo">
+            </div>
+        </section>
+
+        <section id="vision">
+            <h2 data-lang-es="Nuestra Visión" data-lang-en="Our Vision">Nuestra Visión</h2>
+            <div class="info-card">
+                <p data-lang-es="Nuestra visión es transformar la manera en que las personas acceden a servicios esenciales mediante el uso de tecnología innovadora. Nos enfocamos en ofrecer soluciones rápidas, seguras y convenientes a través de nuestras aplicaciones móviles, siendo el puente entre tus necesidades y el mundo digital." data-lang-en="Our vision is to transform how people access essential services through innovative technology. We focus on providing fast, secure, and convenient solutions via our mobile apps, bridging the gap between your needs and the digital world.">
+                    Nuestra visión es transformar la manera en que las personas acceden a servicios esenciales mediante el uso de tecnología innovadora. Nos enfocamos en ofrecer soluciones rápidas, seguras y convenientes a través de nuestras aplicaciones móviles, siendo el puente entre tus necesidades y el mundo digital.
+                </p>
+            </div>
+        </section>
+
+        <section id="servicios">
+            <h2 data-lang-es="Nuestros Servicios" data-lang-en="Our Services">Nuestros Servicios</h2>
+            <div class="service-grid">
+                <div class="service-card">
+                    <img src="images/taxiamigo.png" alt="Taxi Amigo">
+                    <h3 data-lang-es="Taxi Amigo" data-lang-en="Taxi Amigo">Taxi Amigo</h3>
+                    <p data-lang-es="Facilita el acceso a taxis seguros y rápidos para que te desplaces por la ciudad de manera eficiente. Abre la app, elige tu destino y disfruta de un viaje cómodo." data-lang-en="Get safe and fast taxis to move around the city efficiently. Open the app, choose your destination, and enjoy a comfortable ride.">
+                       Facilita el acceso a taxis seguros y rápidos para que te desplaces por la ciudad de manera eficiente. Abre la app, elige tu destino y disfruta de un viaje cómodo.
+                    </p>
+                    <a href="taxiamigo_demo.html" class="btn secondary" data-lang-es="Ver Demo" data-lang-en="View Demo" style="margin-top: 1em; display: inline-block;">Ver Demo</a>
+                </div>
+                <div class="service-card">
+                    <img src="images/yalopido.png" alt="YaLoPido">
+                    <h3 data-lang-es="YaLoPido" data-lang-en="YaLoPido">YaLoPido</h3>
+                    <p data-lang-es="Simplifica tu vida con entregas a domicilio de comida, medicamentos y más. Todo al alcance de tu mano, llevado hasta tu puerta." data-lang-en="Simplify your life with home delivery of food, medicine, and more. Everything at your fingertips, brought to your door.">
+                        Simplifica tu vida con entregas a domicilio de comida, medicamentos y más. Todo al alcance de tu mano, llevado hasta tu puerta.
+                    </p>
+                    <a href="app.html" class="btn secondary" data-lang-es="Ver Demo" data-lang-en="View Demo" style="margin-top: 1em; display: inline-block;">Ver Demo</a>
+                </div>
+            </div>
+        </section>
+        
+        <section id="porque-elegirnos">
+            <h2 data-lang-es="Por Qué Elegirnos" data-lang-en="Why Choose Us">Por Qué Elegirnos</h2>
+             <div class="info-card">
+                <ul>
+                    <li data-lang-es="Comodidad: Accede a todos nuestros servicios desde la palma de tu mano." data-lang-en="Convenience: Access all our services from the palm of your hand.">Comodidad: Accede a todos nuestros servicios desde la palma de tu mano.</li>
+                    <li data-lang-es="Seguridad: Trabajamos con profesionales certificados y servicios de confianza." data-lang-en="Security: We work with certified professionals and trusted services.">Seguridad: Trabajamos con profesionales certificados y servicios de confianza.</li>
+                    <li data-lang-es="Rapidez: Entregas y viajes rápidos para que aproveches tu tiempo." data-lang-en="Speed: Fast deliveries and trips to make the most of your time.">Rapidez: Entregas y viajes rápidos para que aproveches tu tiempo.</li>
+                    <li data-lang-es="Variedad: Soluciones para diferentes necesidades, todo en un solo lugar." data-lang-en="Variety: Solutions for different needs, all in one place.">Variedad: Soluciones para diferentes necesidades, todo en un solo lugar.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="contactenos">
+            <h2 data-lang-es="Contáctenos" data-lang-en="Contact Us">Contáctenos</h2>
+            <div style="text-align: center;">
+                <a href="https://wa.me/qr/SDGBYMT7W3ZIA1" class="whatsapp-link" target="_blank" data-lang-es="Contáctanos en WhatsApp" data-lang-en="Contact us on WhatsApp">Contáctanos en WhatsApp</a>
+            </div>
+            <form action="https://formspree.io/f/xwpgbyqv" method="POST" class="contact-form">
+                <label for="name" data-lang-es="Tu Nombre" data-lang-en="Your Name">Tu Nombre</label>
+                <input id="name" type="text" name="name" placeholder-es="Tu Nombre" placeholder-en="Your Name" required>
+                
+                <label for="email" data-lang-es="Tu Email" data-lang-en="Your Email">Tu Email</label>
+                <input id="email" type="email" name="email" placeholder-es="Tu Email" placeholder-en="Your Email" required>
+                
+                <label for="message" data-lang-es="Tu Mensaje" data-lang-en="Your Message">Tu Mensaje</label>
+                <textarea id="message" name="message" rows="5" placeholder-es="Tu Mensaje" placeholder-en="Your Message" required></textarea>
+                
+                <button type="submit" data-lang-es="Enviar Mensaje" data-lang-en="Send Message">Enviar Mensaje</button>
+            </form>
+        </section>
+
+    </div>
+    
+    <script>
+        function setLanguage(lang) {
+            document.querySelectorAll('[data-lang-es]').forEach(el => {
+                // For elements like h1, p, a, etc.
+                if (el.hasAttribute(`data-lang-${lang}`)) {
+                    el.innerText = el.getAttribute(`data-lang-${lang}`);
+                }
+                // For form labels that also have data-lang
+                if (el.tagName === 'LABEL') {
+                     el.innerText = el.getAttribute(`data-lang-${lang}`);
+                }
+            });
+            
+            document.querySelectorAll('[placeholder-es]').forEach(el => {
+                 if (el.hasAttribute(`placeholder-${lang}`)) {
+                    el.placeholder = el.getAttribute(`placeholder-${lang}`);
+                }
+            });
+
+            document.querySelectorAll('.lang-switcher button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelector(`.lang-switcher button[onclick="setLanguage('${lang}')"]`).classList.add('active');
+        }
+    </script>
+</body>
+</html>

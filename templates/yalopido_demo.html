@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yalopido - Inicia Sesión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f7f7f7; color: #333; }
+        .top-bar { background-color: #2d2d2d; color: white; padding: 10px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 28px; font-weight: bold; color: #35a4e5; }
+        .profile-section { position: relative; }
+        #login-btn, #user-view button { background: none; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; }
+        #login-btn i, #user-view i { margin-right: 8px; }
+        #user-view { display: none; align-items: center; }
+        #user-email { margin-right: 15px; }
+
+        #login-form-container { display: none; position: absolute; right: 0; top: 45px; background-color: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 25px; width: 300px; z-index: 1001; color: #333; }
+        #login-form-container.show { display: block; }
+        #login-form-container h3 { margin-top: 0; text-align: center; color: #2d2d2d; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input { width: 92%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        #login-submit-btn { width: 100%; padding: 12px; background-color: #35a4e5; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 16px; font-weight: bold; }
+        #error-message { color: #D8000C; text-align: center; margin-bottom: 15px; font-size: 14px; background-color: #FFD2D2; padding: 10px; border-radius: 5px; display: none; }
+
+        .hero-section { background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('https://images.pexels.com/photos/376464/pexels-photo-376464.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'); background-size: cover; background-position: center; color: white; padding: 120px 40px; text-align: center; }
+        .hero-section h1 { font-size: 48px; margin: 0 0 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-weight: 900; }
+        #hero-login-btn { background-color: #35a4e5; color: white; border: none; padding: 15px 35px; border-radius: 30px; cursor: pointer; font-size: 18px; font-weight: bold; }
+
+        .content-section { padding: 50px 40px; background-color: white; }
+        .content-section h2 { text-align: center; font-size: 28px; margin-bottom: 40px; color: #444; }
+        .city-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
+        .city-grid p { margin: 0; padding: 10px; text-align: center; }
+
+        footer { background-color: #35a4e5; color: white; padding: 50px 40px 20px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; margin-bottom: 40px; }
+        .footer-col h4 { margin-top: 0; margin-bottom: 15px; font-size: 18px; }
+        .footer-col a { color: white; text-decoration: none; display: block; margin-bottom: 10px; }
+        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.3); font-size: 14px; }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="logo">Yalopido</div>
+        <div class="profile-section">
+            <button id="login-btn"><i class="fas fa-user"></i> Mi Perfil</button>
+            <div id="user-view">
+                <span id="user-email"></span>
+                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Salir</button>
+            </div>
+            <div id="login-form-container">
+                <h3>Accede a tu cuenta</h3>
+                <form id="login-form">
+                    <div id="error-message"></div>
+                    <div class="input-group"><input type="email" id="email" placeholder="Correo electrónico" required></div>
+                    <div class="input-group"><input type="password" id="password" placeholder="Contraseña" required></div>
+                    <button id="login-submit-btn" type="submit">Ingresar</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-section">
+            <h1>Todas las ciudades con delivery</h1>
+            <button id="hero-login-btn">Acceder a mi tienda</button>
+        </section>
+
+        <section class="content-section">
+            <h2>Las mejores tiendas con delivery en tu ciudad</h2>
+            <div class="city-grid">
+                <p>Guayaquil</p><p>Cuenca</p><p>Ambato</p>
+                <p>Manta</p><p>Santo Domingo</p><p>Quito</p>
+                <p>Portoviejo</p><p>Santa Elena</p><p>Loja</p>
+                <p>Latacunga</p><p>Cayambe</p><p>Otavalo</p>
+                <p>Milagro</p><p>Guayas</p><p>Babahoyo</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Sobre Yalopido</h4>
+                <a href="#">Términos y Condiciones</a>
+                <a href="#">Privacidad</a>
+            </div>
+            <div class="footer-col">
+                <h4>Top Categorías</h4>
+                <a href="#">Comida rápida</a>
+                <a href="#">Supermercados</a>
+                <a href="#">Bebidas</a>
+            </div>
+            <div class="footer-col">
+                <h4>Negocios</h4>
+                <a href="#">Registra tu negocio</a>
+                <a href="#">Centro de Socios</a>
+            </div>
+             <div class="footer-col">
+                <h4>Colaboradores</h4>
+                <a href="#">Yalopido para tus colaboradores</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Yalopido &copy; 2024</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDHZzoPhzUPX-6BWaCx4J5xeXwSeOYmkMY", authDomain: "taxinet-929d8.firebaseapp.com", projectId: "taxinet-929d8", storageBucket: "taxinet-929d8.appspot.com", messagingSenderId: "52566606294", appId: "1:52566606294:web:6a2b4f1e7c964502c46477" };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        const loginBtn = document.getElementById('login-btn');
+        const heroLoginBtn = document.getElementById('hero-login-btn');
+        const loginFormContainer = document.getElementById('login-form-container');
+        const loginForm = document.getElementById('login-form');
+        const userView = document.getElementById('user-view');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userEmailSpan = document.getElementById('user-email');
+        const errorMessage = document.getElementById('error-message');
+        
+        function showLoginForm() {
+            loginFormContainer.classList.add('show');
+        }
+
+        loginBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            loginFormContainer.classList.toggle('show');
+        });
+        heroLoginBtn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            showLoginForm(); 
+            window.scrollTo(0, 0);
+        });
+
+        window.addEventListener('click', e => {
+            if (!loginFormContainer.contains(e.target) && e.target !== loginBtn) {
+                loginFormContainer.classList.remove('show');
+            }
+        });
+
+        loginForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+            try {
+                const email = document.getElementById('email').value;
+                const pass = document.getElementById('password').value;
+                await auth.signInWithEmailAndPassword(email, pass);
+            } catch (error) {
+                errorMessage.textContent = 'Usuario o contraseña incorrectos.';
+                errorMessage.style.display = 'block';
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => { await auth.signOut(); });
+
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                loginBtn.style.display = 'none';
+                heroLoginBtn.style.display = 'none';
+                loginFormContainer.classList.remove('show');
+                userView.style.display = 'flex';
+                userEmailSpan.textContent = user.email;
+                
+                try {
+                    const idToken = await user.getIdToken(true);
+                    const response = await fetch('/api/get_user_data', { headers: { 'Authorization': 'Bearer ' + idToken } });
+                    if (response.ok) {
+                        const userData = await response.json();
+                        if (userData.success && userData.role) {
+                            const userRole = userData.role.trim().toLowerCase();
+                            if (userRole === 'vendedor') {
+                                window.location.href = '/pedidos';
+                            } else if (userRole === 'comprador') {
+                                window.location.href = '/home';
+                            }
+                        }
+                    } else {
+                       console.error('API request for user data failed with status:', response.status);
+                    }
+                } catch (error) {
+                    console.error("Could not fetch user data:", error);
+                }
+            } else {
+                loginBtn.style.display = 'block';
+                heroLoginBtn.style.display = 'block';
+                userView.style.display = 'none';
+                userEmailSpan.textContent = '';
+            }
+        });
+    </script>
+</body>
+</html>
