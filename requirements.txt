@@ -7,3 +7,4 @@ flask
 firebase-admin
 google-auth
 gunicorn
+Flask-Cors
