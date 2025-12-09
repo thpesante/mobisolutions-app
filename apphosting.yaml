@@ -1,0 +1,5 @@
+runtime: python
+entrypoint: gunicorn --workers 2 --threads 8 --timeout 0 main:app
+
+runConfig:
+  minInstances: 0
