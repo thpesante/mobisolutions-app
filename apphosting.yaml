@@ -1,5 +1,6 @@
 runtime: python
 entrypoint: gunicorn --workers 2 --threads 8 --timeout 0 main:app
-
+ignore:
+  - public
 runConfig:
   minInstances: 0
