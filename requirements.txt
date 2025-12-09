@@ -1,0 +1,9 @@
+# Dev environment
+pip
+autopep8
+
+# App
+flask
+firebase-admin
+google-auth
+gunicorn
