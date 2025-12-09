@@ -1,4 +1,4 @@
-# Forcing a new build - 2024-12-09
+# Renamed public to templates. Forcing new build.
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from flask import Flask, request, jsonify, render_template, make_response
