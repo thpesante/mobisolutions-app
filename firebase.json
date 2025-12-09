@@ -1,0 +1,10 @@
+{
+  "appHosting": {
+    "build": {
+      "run": "echo 'Build step not needed, deploying source directly.'",
+      "env": {
+        "GOOGLE_RUNTIME": "python"
+      }
+    }
+  }
+}
